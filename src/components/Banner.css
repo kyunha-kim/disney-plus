@@ -45,6 +45,7 @@
   font-weight: 700;
   padding: 0.4rem 1rem;
   margin-right: 1rem;
+  border-radius: 5px;
 }
 .banner__button:hover {
   color: #000;
@@ -60,6 +61,7 @@
 .youtube__button {
   width: 25px;
   height: 25px;
+  background-color: #000;
   display: flex;
   margin: 0 auto;
   border-radius: 4px;
