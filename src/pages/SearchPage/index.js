@@ -61,7 +61,7 @@ const SearchPage = () => {
     return (
       <section className="no-results">
         <div className="no-results__text">
-          <p>찾고자하는 검색어 "{searchTerm}에 맞는 영화가 없습니다."</p>
+          <p>찾고자하는 검색어 "{searchTerm}" 에 맞는 영화가 없습니다.</p>
         </div>
       </section>
     );

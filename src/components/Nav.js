@@ -1,7 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import {
+  getAuth,
+  signInWithPopup,
+  GoogleAuthProvider,
+  onAuthStateChanged,
+  signOut,
+} from "firebase/auth";
 
 const NavWrapper = styled.nav`
   position: fixed;
@@ -61,6 +67,44 @@ const Input = styled.input`
   border: none;
 `;
 
+const UserImg = styled.img`
+  border-radius: 50%;
+  width: 100%;
+  height: 100%;
+`;
+
+const DropDown = styled.div`
+  position: absolute;
+  width: 100%;
+  top: 48px;
+  right: 0;
+  background-color: rgb(19, 19, 19);
+  border: 1px solid rgb(151, 151, 151, 0.34);
+  border-radius: 4px;
+  box-shadow: rgb(0 0 0 / 50%) 0 0 18px 0;
+  padding: 10px;
+  font-size: 14px;
+  letter-spacing: 3px;
+  opacity: 0;
+`;
+
+const SignOut = styled.div`
+  position: relative;
+  cursor: pointer;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    ${DropDown} {
+      opacity: 1;
+      transition-duration: 1s;
+    }
+  }
+`;
+
 const Nav = () => {
   const [show, setShow] = useState(false);
   const { pathname } = useLocation();
@@ -70,6 +114,23 @@ const Nav = () => {
   // firebase
   const auth = getAuth();
   const provider = new GoogleAuthProvider();
+  // localStorage에 userData가 있으면 사용 없으면 {}로 초기값 넣기
+  const initUserData = localStorage.getItem("userData")
+    ? JSON.parse(localStorage.getItem("userData"))
+    : {};
+  const [userData, setUserData] = useState(initUserData);
+
+  useEffect(() => {
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        if (pathname === "/") {
+          navigate("/main");
+        }
+      } else {
+        navigate("/");
+      }
+    });
+  }, [auth, navigate, pathname]);
 
   useEffect(() => {
     window.addEventListener("scroll", handleScroll);
@@ -94,7 +155,21 @@ const Nav = () => {
 
   const handleAuth = () => {
     signInWithPopup(auth, provider)
-      .then((result) => {})
+      .then((result) => {
+        setUserData(result.user);
+        localStorage.setItem("userData", JSON.stringify(result.user));
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  const handleLogOut = () => {
+    signOut(auth)
+      .then(() => {
+        setUserData({});
+        navigate("/");
+      })
       .catch((error) => {
         console.log(error);
       });
@@ -113,13 +188,21 @@ const Nav = () => {
       {pathname === "/" ? (
         <Login onClick={handleAuth}>Login</Login>
       ) : (
-        <Input
-          value={searchValue}
-          onChange={handleChange}
-          className="nav__input"
-          type="text"
-          placeholder="검색어를 입력하세요."
-        />
+        <>
+          <Input
+            value={searchValue}
+            onChange={handleChange}
+            className="nav__input"
+            type="text"
+            placeholder="검색어를 입력하세요."
+          />
+          <SignOut>
+            <UserImg src={userData.photoURL} alt={userData.displayName} />
+            <DropDown>
+              <span onClick={handleLogOut}>Sign Out</span>
+            </DropDown>
+          </SignOut>
+        </>
       )}
     </NavWrapper>
   );
