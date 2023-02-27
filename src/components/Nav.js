@@ -190,6 +190,7 @@ const Nav = () => {
       ) : (
         <>
           <Input
+            onClick={() => navigate("/search")}
             value={searchValue}
             onChange={handleChange}
             className="nav__input"
